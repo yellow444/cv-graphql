@@ -1,0 +1,124 @@
+// Схема базы цифровой визитки.
+// Все дочерние таблицы ссылаются на профиль, у достижений родитель - запись опыта.
+// sort_order задаёт порядок показа: он берётся из порядка элементов в данных сида.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Profile {
+  id           Int          @id @default(autoincrement())
+  /// Стабильный ключ профиля, по нему сид находит запись.
+  slug         String       @unique
+  name         String
+  title        String
+  description  String
+  location     String?
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  links        Link[]
+  skills       Skill[]
+  experience   Experience[]
+  projects     Project[]
+
+  @@map("profiles")
+}
+
+model Link {
+  id        Int     @id @default(autoincrement())
+  profileId Int     @map("profile_id")
+  label     String
+  url       String
+  sortOrder Int     @map("sort_order")
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, url])
+  @@index([profileId, sortOrder])
+  @@map("links")
+}
+
+enum SkillCategory {
+  BACKEND
+  FRONTEND
+  DATA
+  DATABASES
+  DEVOPS
+  AI
+  INTEGRATIONS
+}
+
+model Skill {
+  id        Int           @id @default(autoincrement())
+  profileId Int           @map("profile_id")
+  name      String
+  category  SkillCategory
+  /// Уточнение, где и сколько использовал.
+  note      String?
+  sortOrder Int           @map("sort_order")
+  profile   Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, name])
+  @@index([profileId, sortOrder])
+  @@map("skills")
+}
+
+/// Период хранится с точностью до месяца или до года: месяц может быть неизвестен.
+model Experience {
+  id           Int           @id @default(autoincrement())
+  profileId    Int           @map("profile_id")
+  company      String
+  position     String
+  summary      String?
+  startYear    Int           @map("start_year")
+  startMonth   Int?          @map("start_month")
+  endYear      Int?          @map("end_year")
+  endMonth     Int?          @map("end_month")
+  sortOrder    Int           @map("sort_order")
+  profile      Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  achievements Achievement[]
+
+  @@index([profileId, sortOrder])
+  @@map("experience")
+}
+
+model Achievement {
+  id           Int        @id @default(autoincrement())
+  experienceId Int        @map("experience_id")
+  text         String
+  sortOrder    Int        @map("sort_order")
+  experience   Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@index([experienceId, sortOrder])
+  @@map("achievements")
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  profileId   Int      @map("profile_id")
+  name        String
+  description String
+  url         String?
+  stack       String[]
+  sortOrder   Int      @map("sort_order")
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, name])
+  @@index([profileId, sortOrder])
+  @@map("projects")
+}
+
+/// Служебная таблица сида: хэш последних применённых данных.
+/// Если данные в файле сида не менялись, повторный запуск ничего не пишет.
+model SeedState {
+  key       String   @id
+  checksum  String
+  appliedAt DateTime @default(now()) @updatedAt @map("applied_at")
+
+  @@map("seed_state")
+}

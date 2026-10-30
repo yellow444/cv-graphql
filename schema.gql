@@ -1,0 +1,109 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""Место работы"""
+type Experience {
+  """Достижения на этом месте работы"""
+  achievements: [String!]!
+  company: String!
+
+  """Окончание. null, если дата не указана"""
+  endDate: String
+  id: ID!
+
+  """
+  Период для показа: "09.2021 - 10.2026" или "с 09.2021"
+  """
+  period: String!
+  position: String!
+
+  """Начало в ISO 8601: "2021-09" или "2023", если месяц неизвестен"""
+  startDate: String!
+
+  """Чем занималась компания или команда"""
+  summary: String
+}
+
+"""Ссылка на внешний ресурс: GitHub, статья, канал"""
+type Link {
+  id: ID!
+  label: String!
+  url: String!
+}
+
+"""Профиль кандидата"""
+type Profile {
+  """Краткое описание"""
+  description: String!
+
+  """Опыт работы, сначала последние места"""
+  experience: [Experience!]!
+  id: ID!
+
+  """GitHub, статьи и другие ресурсы"""
+  links: [Link!]!
+  location: String
+  name: String!
+
+  """Проекты и статьи"""
+  projects: [Project!]!
+
+  """Навыки, можно отфильтровать по группе"""
+  skills(category: SkillCategory): [Skill!]!
+
+  """Должность или специализация"""
+  title: String!
+}
+
+"""Проект"""
+type Project {
+  description: String!
+  id: ID!
+  name: String!
+
+  """Технологии проекта"""
+  stack: [String!]!
+
+  """Ссылка на проект или репозиторий. null, если код закрыт"""
+  url: String
+}
+
+type Query {
+  """Профиль кандидата со всеми разделами визитки"""
+  profile: Profile!
+}
+
+"""Навык"""
+type Skill {
+  category: SkillCategory!
+  id: ID!
+  name: String!
+
+  """Где и сколько использовал"""
+  note: String
+}
+
+"""Группа навыков"""
+enum SkillCategory {
+  """LLM и AI-инструменты"""
+  AI
+
+  """Бэкенд и языки"""
+  BACKEND
+
+  """Данные, ETL и очереди"""
+  DATA
+
+  """Базы данных"""
+  DATABASES
+
+  """DevOps и инфраструктура"""
+  DEVOPS
+
+  """Фронтенд"""
+  FRONTEND
+
+  """Интеграции с госсистемами"""
+  INTEGRATIONS
+}

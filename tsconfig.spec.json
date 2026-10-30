@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  // Jest исполняет код как CommonJS. Prisma 7 загружает свой WASM-компилятор запросов через import(),
+  // а его Jest поддерживает только с флагом --experimental-vm-modules. В CommonJS-сборке TypeScript
+  // превращает import() в require(), поэтому тестам флаг не нужен. Сборка приложения это не затрагивает.
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node10"
+  }
+}
